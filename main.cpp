@@ -1,7 +1,6 @@
 #include <SDL3/SDL.h>
 #include <iostream>
 #include <cmath>
-#include <vector>
 
 #ifdef __APPLE__
 #include <OpenGL/gl3.h>
@@ -184,10 +183,10 @@ void setupCubeData(GLuint& VAO, GLuint& VBO) {
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
     
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)nullptr);
     glEnableVertexAttribArray(0);
-    
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), reinterpret_cast<void*>(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
     
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -300,15 +299,16 @@ int main(int argc, char* argv[]) {
                     case SDLK_KP_MINUS:
                         camera.zoomOut();
                         break;
+                    default: ;
                 }
             } else if (event.type == SDL_EVENT_WINDOW_RESIZED) {
                 SDL_GetWindowSize(window, &windowWidth, &windowHeight);
                 glViewport(0, 0, windowWidth, windowHeight);
             }
         }
-        
-        Uint64 currentTime = SDL_GetTicks();
-        float deltaTime = (currentTime - lastTime) / 1000.0f;
+
+        const Uint64 currentTime = SDL_GetTicks();
+        const float deltaTime = static_cast<float>(currentTime - lastTime) / 1000.0f;
         lastTime = currentTime;
         
         camera.update(deltaTime);
@@ -320,7 +320,7 @@ int main(int argc, char* argv[]) {
         glUseProgram(shaderProgram);
         
         // Model matrix (rotation)
-        const float angleRad = cube.rotation * M_PI / 180.0f;
+        const float angleRad = static_cast<float>(cube.rotation * M_PI) / 180.0f;
         const float c = cos(angleRad);
         const float s = sin(angleRad);
         float axis[] = {0.5f, 1.0f, 0.0f};
@@ -343,7 +343,7 @@ int main(int argc, char* argv[]) {
         };
         
         // Projection matrix
-        const float aspect = (float)windowWidth / (float)windowHeight;
+        const float aspect = static_cast<float>(windowWidth) / static_cast<float>(windowHeight);
         constexpr float fov = 45.0f * M_PI / 180.0f;
         constexpr float near = 0.1f;
         constexpr float far = 100.0f;
