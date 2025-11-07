@@ -1,0 +1,32 @@
+# IDE folders
+.vscode/
+.idea/
+
+# Build directories
+build/
+cmake-build-*/
+out/
+
+# Compiled binaries
+*.exe
+*.out
+*.app
+*.dylib
+*.so
+*.dll
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+
+# macOS
+.DS_Store
+*.dSYM/
+
+# Windows
+*.obj
+*.lib
+*.exp
+*.pdb
