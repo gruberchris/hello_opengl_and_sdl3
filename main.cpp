@@ -1,12 +1,15 @@
 #include <SDL3/SDL.h>
 #include <iostream>
-#include <cmath>
 
 #ifdef __APPLE__
 #include <OpenGL/gl3.h>
 #else
 #include <GL/glew.h>
 #endif
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 constexpr int WINDOW_WIDTH = 1024;
 constexpr int WINDOW_HEIGHT = 768;
@@ -309,49 +312,24 @@ int main(int argc, char* argv[]) {
         glUseProgram(shaderProgram);
         
         // Model matrix (rotation)
-        const float angleRad = static_cast<float>(cube.rotation * M_PI) / 180.0f;
-        const float c = cos(angleRad);
-        const float s = sin(angleRad);
-        float axis[] = {0.5f, 1.0f, 0.0f};
-        const float len = sqrt(axis[0]*axis[0] + axis[1]*axis[1] + axis[2]*axis[2]);
-        axis[0] /= len; axis[1] /= len; axis[2] /= len;
-
-        const float model[16] = {
-            axis[0]*axis[0]*(1-c) + c,           axis[0]*axis[1]*(1-c) - axis[2]*s, axis[0]*axis[2]*(1-c) + axis[1]*s, 0,
-            axis[1]*axis[0]*(1-c) + axis[2]*s,   axis[1]*axis[1]*(1-c) + c,         axis[1]*axis[2]*(1-c) - axis[0]*s, 0,
-            axis[2]*axis[0]*(1-c) - axis[1]*s,   axis[2]*axis[1]*(1-c) + axis[0]*s, axis[2]*axis[2]*(1-c) + c,         0,
-            0, 0, 0, 1
-        };
+        auto model = glm::mat4(1.0f);
+        model = glm::rotate(model, glm::radians(cube.rotation), glm::vec3(0.5f, 1.0f, 0.0f));
         
         // View matrix (camera)
-        const float view[16] = {
-            1, 0, 0, 0,
-            0, 1, 0, 0,
-            0, 0, 1, 0,
-            0, 0, -camera.distance, 1
-        };
+        auto view = glm::mat4(1.0f);
+        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -camera.distance));
         
         // Projection matrix
         const float aspect = static_cast<float>(windowWidth) / static_cast<float>(windowHeight);
-        constexpr float fov = 45.0f * M_PI / 180.0f;
-        constexpr float near = 0.1f;
-        constexpr float far = 100.0f;
-        const float f = 1.0f / tan(fov / 2.0f);
-
-        const float projection[16] = {
-            f / aspect, 0, 0, 0,
-            0, f, 0, 0,
-            0, 0, (far + near) / (near - far), -1,
-            0, 0, (2.0f * far * near) / (near - far), 0
-        };
+        glm::mat4 projection = glm::perspective(glm::radians(45.0f), aspect, 0.1f, 100.0f);
 
         const GLint modelLoc = glGetUniformLocation(shaderProgram, "model");
         const GLint viewLoc = glGetUniformLocation(shaderProgram, "view");
         const GLint projectionLoc = glGetUniformLocation(shaderProgram, "projection");
         
-        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, model);
-        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, view);
-        glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, projection);
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+        glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
         
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 36);

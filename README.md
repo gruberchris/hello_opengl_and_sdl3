@@ -38,6 +38,20 @@ Handles the 3D graphics rendering:
 - macOS: OpenGL 4.1 (highest version supported)
 - Linux/Windows: OpenGL 4.6
 
+### GLM (OpenGL Mathematics)
+A header-only C++ mathematics library for graphics:
+- Matrix transformations (rotation, translation, projection)
+- Vector operations (vec3, vec4)
+- Perspective projection calculations
+- Angle conversions (degrees to radians)
+- Provides clean, readable API for 3D math operations
+
+In this app, GLM is used for:
+- Creating rotation matrices for the spinning cube
+- Building the view matrix for camera positioning
+- Calculating the perspective projection matrix
+- Converting degrees to radians for rotation angles
+
 ## Controls
 
 | Key | Action |
@@ -56,10 +70,14 @@ Handles the 3D graphics rendering:
 - C++17 compatible compiler
 - SDL3 development libraries
 - OpenGL development libraries
+- GLM (OpenGL Mathematics) library
 
 ### Build Instructions
 
 ```bash
+# Install dependencies (macOS with Homebrew)
+brew install sdl3 glm
+
 # Create build directory
 mkdir build
 cd build
