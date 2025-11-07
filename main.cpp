@@ -9,10 +9,10 @@
 #include <GL/glew.h>
 #endif
 
-const int WINDOW_WIDTH = 800;
-const int WINDOW_HEIGHT = 600;
+constexpr int WINDOW_WIDTH = 1024;
+constexpr int WINDOW_HEIGHT = 768;
 
-const char* vertexShaderSource = R"(
+auto vertexShaderSource = R"(
 #version 410 core
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec3 aColor;
@@ -30,7 +30,7 @@ void main()
 }
 )";
 
-const char* fragmentShaderSource = R"(
+auto fragmentShaderSource = R"(
 #version 410 core
 in vec3 ourColor;
 out vec4 FragColor;
@@ -67,7 +67,7 @@ struct Cube {
     bool rotating = false;
     const float rotationSpeed = 50.0f;
     
-    void update(float deltaTime) {
+    void update(const float deltaTime) {
         if (rotating) {
             rotation += rotationSpeed * deltaTime;
             if (rotation >= 360.0f) rotation -= 360.0f;
@@ -86,8 +86,8 @@ void multiplyMatrix(float* result, const float* a, const float* b) {
     }
 }
 
-GLuint compileShader(GLenum type, const char* source) {
-    GLuint shader = glCreateShader(type);
+GLuint compileShader(const GLenum type, const char* source) {
+    const GLuint shader = glCreateShader(type);
     glShaderSource(shader, 1, &source, nullptr);
     glCompileShader(shader);
     
@@ -102,10 +102,10 @@ GLuint compileShader(GLenum type, const char* source) {
 }
 
 GLuint createShaderProgram() {
-    GLuint vertexShader = compileShader(GL_VERTEX_SHADER, vertexShaderSource);
-    GLuint fragmentShader = compileShader(GL_FRAGMENT_SHADER, fragmentShaderSource);
-    
-    GLuint program = glCreateProgram();
+    const GLuint vertexShader = compileShader(GL_VERTEX_SHADER, vertexShaderSource);
+    const GLuint fragmentShader = compileShader(GL_FRAGMENT_SHADER, fragmentShaderSource);
+
+    const GLuint program = glCreateProgram();
     glAttachShader(program, vertexShader);
     glAttachShader(program, fragmentShader);
     glLinkProgram(program);
@@ -125,7 +125,7 @@ GLuint createShaderProgram() {
 }
 
 void setupCubeData(GLuint& VAO, GLuint& VBO) {
-    float vertices[] = {
+    constexpr float vertices[] = {
         // Positions // Colors (gradients)
         // Front face - Red to Yellow
         -1.0f, -1.0f,  1.0f,  1.0f, 0.0f, 0.0f,
@@ -226,7 +226,7 @@ int main(int argc, char* argv[]) {
         SDL_Quit();
         return 1;
     }
-    
+
     SDL_GLContext glContext = SDL_GL_CreateContext(window);
     if (!glContext) {
         std::cerr << "SDL_GL_CreateContext failed: " << SDL_GetError() << std::endl;
@@ -245,10 +245,10 @@ int main(int argc, char* argv[]) {
 #endif
     
     // Print version information
-    int sdlVersion = SDL_GetVersion();
-    int sdlMajor = SDL_VERSIONNUM_MAJOR(sdlVersion);
-    int sdlMinor = SDL_VERSIONNUM_MINOR(sdlVersion);
-    int sdlPatch = SDL_VERSIONNUM_MICRO(sdlVersion);
+    const int sdlVersion = SDL_GetVersion();
+    const int sdlMajor = SDL_VERSIONNUM_MAJOR(sdlVersion);
+    const int sdlMinor = SDL_VERSIONNUM_MINOR(sdlVersion);
+    const int sdlPatch = SDL_VERSIONNUM_MICRO(sdlVersion);
     std::cout << "SDL Version: " << sdlMajor << "." << sdlMinor << "." << sdlPatch << std::endl;
     std::cout << "OpenGL Version: " << glGetString(GL_VERSION) << std::endl;
     std::cout << "OpenGL Renderer: " << glGetString(GL_RENDERER) << std::endl;
@@ -262,8 +262,8 @@ int main(int argc, char* argv[]) {
     
     // Setup OpenGL
     glEnable(GL_DEPTH_TEST);
-    
-    GLuint shaderProgram = createShaderProgram();
+
+    const GLuint shaderProgram = createShaderProgram();
     GLuint VAO, VBO;
     setupCubeData(VAO, VBO);
     
@@ -320,14 +320,14 @@ int main(int argc, char* argv[]) {
         glUseProgram(shaderProgram);
         
         // Model matrix (rotation)
-        float angleRad = cube.rotation * M_PI / 180.0f;
-        float c = cos(angleRad);
-        float s = sin(angleRad);
+        const float angleRad = cube.rotation * M_PI / 180.0f;
+        const float c = cos(angleRad);
+        const float s = sin(angleRad);
         float axis[] = {0.5f, 1.0f, 0.0f};
-        float len = sqrt(axis[0]*axis[0] + axis[1]*axis[1] + axis[2]*axis[2]);
+        const float len = sqrt(axis[0]*axis[0] + axis[1]*axis[1] + axis[2]*axis[2]);
         axis[0] /= len; axis[1] /= len; axis[2] /= len;
-        
-        float model[16] = {
+
+        const float model[16] = {
             axis[0]*axis[0]*(1-c) + c,           axis[0]*axis[1]*(1-c) - axis[2]*s, axis[0]*axis[2]*(1-c) + axis[1]*s, 0,
             axis[1]*axis[0]*(1-c) + axis[2]*s,   axis[1]*axis[1]*(1-c) + c,         axis[1]*axis[2]*(1-c) - axis[0]*s, 0,
             axis[2]*axis[0]*(1-c) - axis[1]*s,   axis[2]*axis[1]*(1-c) + axis[0]*s, axis[2]*axis[2]*(1-c) + c,         0,
@@ -335,7 +335,7 @@ int main(int argc, char* argv[]) {
         };
         
         // View matrix (camera)
-        float view[16] = {
+        const float view[16] = {
             1, 0, 0, 0,
             0, 1, 0, 0,
             0, 0, 1, 0,
@@ -343,22 +343,22 @@ int main(int argc, char* argv[]) {
         };
         
         // Projection matrix
-        float aspect = (float)windowWidth / (float)windowHeight;
-        float fov = 45.0f * M_PI / 180.0f;
-        float near = 0.1f;
-        float far = 100.0f;
-        float f = 1.0f / tan(fov / 2.0f);
-        
-        float projection[16] = {
+        const float aspect = (float)windowWidth / (float)windowHeight;
+        constexpr float fov = 45.0f * M_PI / 180.0f;
+        constexpr float near = 0.1f;
+        constexpr float far = 100.0f;
+        const float f = 1.0f / tan(fov / 2.0f);
+
+        const float projection[16] = {
             f / aspect, 0, 0, 0,
             0, f, 0, 0,
             0, 0, (far + near) / (near - far), -1,
             0, 0, (2.0f * far * near) / (near - far), 0
         };
-        
-        GLint modelLoc = glGetUniformLocation(shaderProgram, "model");
-        GLint viewLoc = glGetUniformLocation(shaderProgram, "view");
-        GLint projectionLoc = glGetUniformLocation(shaderProgram, "projection");
+
+        const GLint modelLoc = glGetUniformLocation(shaderProgram, "model");
+        const GLint viewLoc = glGetUniformLocation(shaderProgram, "view");
+        const GLint projectionLoc = glGetUniformLocation(shaderProgram, "projection");
         
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, model);
         glUniformMatrix4fv(viewLoc, 1, GL_FALSE, view);
